@@ -3,13 +3,16 @@ import * as THREE from 'three';
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
+let carConfig = {
+    color:'',
+}
+
 // 相机参数和视角
 function init(){
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 100 );
     camera.position.set(5,1,1);
-
 
     var ambientLight = new THREE.AmbientLight(0xffffff,5);
     scene.add(ambientLight);
@@ -18,20 +21,18 @@ function init(){
     directionalLight.castShadow = true;
     scene.add( directionalLight );
 
-
     //加载模型
     const gltfLoader = new GLTFLoader();
     gltfLoader.load('model/car/scene.gltf',function (gltf){
-        // gltf.scene.traverse((obj)=>{
-        //     if(obj.type == 'Mesh'){
-        //         obj.material = new THREE.MeshLambertMaterial({
-        //             map:obj.material.map,
-        //             color:obj.material.color
-        //         });
-        //     }
-        // })
+        gltf.scene.traverse((obj)=>{
+            if(obj.isMesh && obj.name.includes('boot001')){
+                carConfig.color = obj.material.color;
+                console.log(carConfig.color);
+            }
+        })
         scene.add( gltf.scene );
-    },undefined,function (err){
+        settingBox();
+    },function (err){
         console.log(err);
     })
 
@@ -58,4 +59,22 @@ function init(){
     const controls = new OrbitControls(camera,renderer.domElement);
 }
 
+const  setCarBootColor = (color) => {
+    carConfig.color.set(color);
+}
+
+function settingBox(){
+    let colorList = ['red','#d2568c','#36292f','#3e3841','#2775b6','#cdd1d3','#f28e16'];
+    colorList.forEach((item)=>{
+        let block = document.createElement("DIV");
+        block.className = 'color-block';
+        block.addEventListener('click',()=>{
+            setCarBootColor(item);
+        })
+        block.style.cssText = `background-color:${item}`;
+        document.querySelector(".color-select").appendChild(block);
+    })
+}
+
 init()
+
